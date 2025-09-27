@@ -1,0 +1,124 @@
+"use client"
+
+import type React from "react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { emailService } from "@/lib/email-service"
+import { passwordResetService } from "@/lib/password-reset"
+import { ResetPasswordForm } from "./reset-password-form"
+import { Loader2, Mail, ArrowLeft, CheckCircle } from "lucide-react"
+
+interface ForgotPasswordFormProps {
+  onBack: () => void
+}
+
+export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
+  const [step, setStep] = useState<"email" | "reset" | "success">("email")
+  const [email, setEmail] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
+
+    try {
+      // Generate reset token
+      const resetToken = passwordResetService.generateResetToken(email)
+
+      // Send email with reset token
+      const result = await emailService.sendPasswordResetEmail(email, resetToken)
+
+      if (result.success) {
+        setStep("reset")
+      } else {
+        setError(result.error || "Erro ao enviar email de recuperação")
+      }
+    } catch (err) {
+      setError("Erro ao enviar email de recuperação")
+    }
+
+    setIsLoading(false)
+  }
+
+  const handleResetSuccess = () => {
+    setStep("success")
+  }
+
+  if (step === "success") {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="space-y-1 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+            <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <CardTitle className="text-2xl font-semibold text-primary">Senha redefinida!</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Sua senha foi redefinida com sucesso. Você já pode fazer login com a nova senha.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={onBack} className="w-full">
+            Fazer Login
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (step === "reset") {
+    return <ResetPasswordForm email={email} onBack={() => setStep("email")} onSuccess={handleResetSuccess} />
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl font-semibold text-primary">Recuperar senha</CardTitle>
+        <CardDescription className="text-muted-foreground">
+          Digite seu email para receber um código de recuperação
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleEmailSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+
+          {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Enviar Código
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-sm text-muted-foreground hover:text-primary flex items-center justify-center gap-2 mx-auto"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao login
+          </button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
