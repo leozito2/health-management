@@ -6,6 +6,11 @@ export interface User {
   sexo: string
   endereco_completo: string
   data_nascimento: string
+  telefone?: string
+  endereco?: string
+  cidade?: string
+  estado?: string
+  cep?: string
   createdAt: Date
 }
 
@@ -122,5 +127,58 @@ export const authService = {
     // In a real app, this would send an email
     console.log(`Password reset email sent to ${email}`)
     return { success: true }
+  },
+
+  updateUser: async (userData: {
+    nome_completo: string
+    email: string
+    telefone?: string
+    data_nascimento?: string
+    endereco?: string
+    cidade?: string
+    estado?: string
+    cep?: string
+  }): Promise<{ success: boolean; error?: string; user?: User }> => {
+    if (!currentUser) {
+      return { success: false, error: "Usuário não autenticado" }
+    }
+
+    // Load users from localStorage if available
+    if (typeof window !== "undefined") {
+      const storedUsers = localStorage.getItem("users")
+      if (storedUsers) {
+        users = JSON.parse(storedUsers)
+      }
+    }
+
+    // Find and update user
+    const userIndex = users.findIndex((u) => u.id === currentUser.id)
+    if (userIndex === -1) {
+      return { success: false, error: "Usuário não encontrado" }
+    }
+
+    // Update user data
+    const updatedUser: User = {
+      ...users[userIndex],
+      nome_completo: userData.nome_completo,
+      email: userData.email,
+      telefone: userData.telefone,
+      data_nascimento: userData.data_nascimento || users[userIndex].data_nascimento,
+      endereco: userData.endereco,
+      cidade: userData.cidade,
+      estado: userData.estado,
+      cep: userData.cep,
+    }
+
+    users[userIndex] = updatedUser
+    currentUser = updatedUser
+
+    // Update localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("users", JSON.stringify(users))
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser))
+    }
+
+    return { success: true, user: updatedUser }
   },
 }

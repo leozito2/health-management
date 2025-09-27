@@ -99,17 +99,21 @@ export function ResetPasswordForm({ email, onBack, onSuccess }: ResetPasswordFor
                   type="text"
                   placeholder="123456"
                   value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  className="pl-10 text-center text-lg tracking-widest"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 6)
+                    setToken(value)
+                  }}
+                  className="pl-10 text-center text-lg tracking-widest font-mono"
                   maxLength={6}
                   required
                 />
               </div>
+              <p className="text-xs text-muted-foreground text-center">Digite apenas os 6 números do código</p>
             </div>
 
             {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || token.length !== 6}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Verificar Código
             </Button>

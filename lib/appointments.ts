@@ -47,6 +47,48 @@ export const getAppointments = (): any[] => {
   return []
 }
 
+export const createAppointment = async (appointmentData: {
+  tipo_consulta: string
+  nome_medico: string
+  especialidade: string
+  data_consulta: string
+  horario_consulta: string
+  local_consulta: string
+  observacoes?: string
+}): Promise<{ success: boolean; error?: string; appointment?: any }> => {
+  const newAppointment = {
+    id: Math.random().toString(36).substr(2, 9),
+    tipo_consulta: appointmentData.tipo_consulta,
+    nome_medico: appointmentData.nome_medico,
+    especialidade: appointmentData.especialidade,
+    data_consulta: appointmentData.data_consulta,
+    horario_consulta: appointmentData.horario_consulta,
+    local_consulta: appointmentData.local_consulta,
+    observacoes: appointmentData.observacoes || "",
+    status: "scheduled",
+    createdAt: new Date(),
+  }
+
+  // Load existing appointments
+  let existingAppointments: any[] = []
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("appointments")
+    if (stored) {
+      existingAppointments = JSON.parse(stored)
+    }
+  }
+
+  // Add new appointment
+  existingAppointments.push(newAppointment)
+
+  // Store back to localStorage
+  if (typeof window !== "undefined") {
+    localStorage.setItem("appointments", JSON.stringify(existingAppointments))
+  }
+
+  return { success: true, appointment: newAppointment }
+}
+
 export const appointmentsService = {
   create: async (
     appointmentData: Omit<Appointment, "id" | "createdAt" | "status">,

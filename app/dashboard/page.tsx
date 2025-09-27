@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Heart, Calendar, Pill, FileText, User, LogOut } from "lucide-react"
+import { Heart, Calendar, Pill, User, LogOut } from "lucide-react"
 import { getAppointments } from "@/lib/appointments"
 import { getMedications } from "@/lib/medications"
 
@@ -19,15 +19,8 @@ export default function DashboardPage() {
       return
     }
 
-    console.log("[v0] Loading dashboard data...")
-
     const loadedAppointments = getAppointments()
     const loadedMedications = getMedications()
-
-    console.log("[v0] Loaded appointments:", loadedAppointments)
-    console.log("[v0] Loaded medications:", loadedMedications)
-    console.log("[v0] localStorage appointments:", localStorage.getItem("appointments"))
-    console.log("[v0] localStorage medications:", localStorage.getItem("medications"))
 
     setAppointments(loadedAppointments)
     setMedications(loadedMedications)
@@ -65,7 +58,6 @@ export default function DashboardPage() {
   const dashboardStats = {
     proximasConsultas: getProximasConsultas().length,
     medicamentosAtivos: medications.filter((med) => med.ativo).length,
-    relatorios: 0,
   }
 
   return (
@@ -109,7 +101,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
@@ -130,17 +122,6 @@ export default function DashboardPage() {
             </div>
             <h3 className="font-semibold text-gray-900 mb-1">Medicamentos</h3>
             <p className="text-sm text-gray-600">Em uso atualmente</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">{dashboardStats.relatorios}</span>
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Relatórios</h3>
-            <p className="text-sm text-gray-600">Documentos salvos</p>
           </div>
         </div>
 
@@ -166,7 +147,7 @@ export default function DashboardPage() {
         )}
 
         {/* Action Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {/* Manage Appointments */}
           <div
             className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 cursor-pointer"
@@ -200,7 +181,7 @@ export default function DashboardPage() {
           {/* Profile Settings */}
           <div
             className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 cursor-pointer"
-            onClick={() => navigate("/profile-setup")}
+            onClick={() => navigate("/profile")}
           >
             <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
               <User className="w-6 h-6 text-white" />

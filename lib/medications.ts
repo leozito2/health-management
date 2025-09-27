@@ -24,8 +24,48 @@ export interface MedicationLog {
 }
 
 // Simple in-memory storage for demo purposes
-let medications: Medication[] = []
+let medications: any[] = []
 let medicationLogs: MedicationLog[] = []
+
+export const createMedication = async (medicationData: {
+  nome: string
+  principio_ativo: string
+  tipo: string
+  dose: string
+  horario_uso: string
+  data_vencimento: string
+}): Promise<{ success: boolean; error?: string; medication?: any }> => {
+  const newMedication = {
+    id: Math.random().toString(36).substr(2, 9),
+    nome: medicationData.nome,
+    principio_ativo: medicationData.principio_ativo,
+    tipo: medicationData.tipo,
+    dose: medicationData.dose,
+    horario_uso: medicationData.horario_uso,
+    data_vencimento: medicationData.data_vencimento,
+    ativo: true,
+    createdAt: new Date(),
+  }
+
+  // Load existing medications
+  let existingMedications: any[] = []
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("medications")
+    if (stored) {
+      existingMedications = JSON.parse(stored)
+    }
+  }
+
+  // Add new medication
+  existingMedications.push(newMedication)
+
+  // Store back to localStorage
+  if (typeof window !== "undefined") {
+    localStorage.setItem("medications", JSON.stringify(existingMedications))
+  }
+
+  return { success: true, medication: newMedication }
+}
 
 export const medicationsService = {
   create: async (
@@ -52,7 +92,7 @@ export const medicationsService = {
     return { success: true, medication: newMedication }
   },
 
-  getByUserId: async (userId: string): Promise<Medication[]> => {
+  getByUserId: async (userId: string): Promise<any[]> => {
     // Load medications from localStorage if available
     if (typeof window !== "undefined") {
       const storedMedications = localStorage.getItem("medications")
@@ -160,13 +200,13 @@ export const medicationsService = {
     userId: string,
   ): Promise<
     Array<{
-      medication: Medication
+      medication: any
       times: string[]
       logs: MedicationLog[]
     }>
   > => {
     const userMedications = await medicationsService.getByUserId(userId)
-    const activeMedications = userMedications.filter((med) => med.isActive)
+    const activeMedications = userMedications.filter((med) => med.ativo)
 
     const today = new Date()
     const todayStr = today.toISOString().split("T")[0]
@@ -183,7 +223,7 @@ export const medicationsService = {
 
       schedule.push({
         medication,
-        times: medication.reminderTimes,
+        times: medication.horario_uso.split(","),
         logs: todayLogs,
       })
     }

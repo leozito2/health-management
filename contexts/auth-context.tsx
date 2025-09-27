@@ -20,6 +20,16 @@ interface AuthContextType extends AuthState {
   }>
   logout: () => Promise<void>
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>
+  updateUser: (userData: {
+    nome_completo: string
+    email: string
+    telefone?: string
+    data_nascimento?: string
+    endereco?: string
+    cidade?: string
+    estado?: string
+    cep?: string
+  }) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -71,6 +81,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return await authService.resetPassword(email)
   }
 
+  const updateUser = async (userData: {
+    nome_completo: string
+    email: string
+    telefone?: string
+    data_nascimento?: string
+    endereco?: string
+    cidade?: string
+    estado?: string
+    cep?: string
+  }) => {
+    const result = await authService.updateUser(userData)
+    if (result.success && result.user) {
+      setAuthState({ user: result.user, isAuthenticated: true })
+    }
+    return result
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -79,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         resetPassword,
+        updateUser,
       }}
     >
       {children}
