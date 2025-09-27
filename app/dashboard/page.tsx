@@ -19,9 +19,18 @@ export default function DashboardPage() {
       return
     }
 
-    // Load data
-    setAppointments(getAppointments())
-    setMedications(getMedications())
+    console.log("[v0] Loading dashboard data...")
+
+    const loadedAppointments = getAppointments()
+    const loadedMedications = getMedications()
+
+    console.log("[v0] Loaded appointments:", loadedAppointments)
+    console.log("[v0] Loaded medications:", loadedMedications)
+    console.log("[v0] localStorage appointments:", localStorage.getItem("appointments"))
+    console.log("[v0] localStorage medications:", localStorage.getItem("medications"))
+
+    setAppointments(loadedAppointments)
+    setMedications(loadedMedications)
   }, [isAuthenticated, router])
 
   if (!isAuthenticated || !user) {
