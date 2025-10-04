@@ -17,33 +17,17 @@ export interface Appointment {
 let appointments: Appointment[] = []
 
 export const getAppointments = (): any[] => {
-  console.log("[v0] getAppointments called")
-
   // Load appointments from localStorage if available
   if (typeof window !== "undefined") {
     const storedAppointments = localStorage.getItem("appointments")
-    console.log("[v0] Raw stored appointments:", storedAppointments)
 
     if (storedAppointments) {
       const parsed = JSON.parse(storedAppointments)
-      console.log("[v0] Parsed appointments:", parsed)
-
-      const mapped = parsed.map((apt: any) => ({
-        ...apt,
-        data_consulta: apt.date, // Map to expected field name
-        horario_consulta: apt.time, // Map to expected field name
-        tipo_consulta: apt.specialty, // Map to expected field name
-        nome_medico: apt.doctorName, // Map to expected field name
-        date: new Date(apt.date),
-        createdAt: new Date(apt.createdAt),
-      }))
-
-      console.log("[v0] Mapped appointments:", mapped)
-      return mapped
+      // Return appointments as stored, no need to remap fields
+      return parsed
     }
   }
 
-  console.log("[v0] No appointments found, returning empty array")
   return []
 }
 
@@ -97,21 +81,34 @@ export const appointmentsService = {
     error?: string
     appointment?: Appointment
   }> => {
-    const newAppointment: Appointment = {
-      ...appointmentData,
-      id: Math.random().toString(36).substr(2, 9),
-      status: "scheduled",
-      createdAt: new Date(),
+    try {
+      const newAppointment: Appointment = {
+        ...appointmentData,
+        id: Math.random().toString(36).substr(2, 9),
+        status: "scheduled",
+        createdAt: new Date(),
+      }
+
+      let existingAppointments: any[] = []
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("appointments")
+        if (stored) {
+          existingAppointments = JSON.parse(stored)
+        }
+      }
+
+      existingAppointments.push(newAppointment)
+
+      // Store in localStorage for persistence
+      if (typeof window !== "undefined") {
+        localStorage.setItem("appointments", JSON.stringify(existingAppointments))
+      }
+
+      return { success: true, appointment: newAppointment }
+    } catch (error) {
+      console.error("[v0] Error creating appointment:", error)
+      return { success: false, error: "Erro ao criar consulta" }
     }
-
-    appointments.push(newAppointment)
-
-    // Store in localStorage for persistence
-    if (typeof window !== "undefined") {
-      localStorage.setItem("appointments", JSON.stringify(appointments))
-    }
-
-    return { success: true, appointment: newAppointment }
   },
 
   getByUserId: async (userId: string): Promise<Appointment[]> => {

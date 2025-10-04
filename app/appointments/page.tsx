@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Heart, Plus, Calendar, User, MapPin, Search } from "lucide-react"
+import { ArrowLeft, Heart, Plus, Calendar, User, MapPin, Search, Check } from "lucide-react"
 import { getAppointments, createAppointment } from "@/lib/appointments"
 
 export default function AppointmentsPage() {
@@ -13,6 +13,7 @@ export default function AppointmentsPage() {
   const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   const [appointments, setAppointments] = useState<any[]>([])
+  const [appointmentHistory, setAppointmentHistory] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [formData, setFormData] = useState({
     tipo_consulta: "",
@@ -31,11 +32,17 @@ export default function AppointmentsPage() {
       return
     }
     loadAppointments()
+    loadAppointmentHistory()
   }, [isAuthenticated, router])
 
   const loadAppointments = () => {
     const loadedAppointments = getAppointments()
     setAppointments(loadedAppointments)
+  }
+
+  const loadAppointmentHistory = () => {
+    const history = JSON.parse(localStorage.getItem("appointmentHistory") || "[]")
+    setAppointmentHistory(history)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -68,15 +75,43 @@ export default function AppointmentsPage() {
     }
   }
 
+  const handleMarcarComoConcluida = (appointmentId: string) => {
+    const appointment = appointments.find((a) => a.id === appointmentId)
+    if (!appointment) return
+
+    const historicoItem = {
+      ...appointment,
+      data_conclusao: new Date().toISOString(),
+      status: "concluida",
+    }
+
+    const historico = JSON.parse(localStorage.getItem("appointmentHistory") || "[]")
+    historico.push(historicoItem)
+    localStorage.setItem("appointmentHistory", JSON.stringify(historico))
+
+    const updatedAppointments = appointments.filter((a) => a.id !== appointmentId)
+    localStorage.setItem("appointments", JSON.stringify(updatedAppointments))
+    setAppointments(updatedAppointments)
+
+    loadAppointmentHistory()
+
+    alert("Consulta marcada como concluída e movida para o histórico!")
+  }
+
   const filteredAppointments = appointments.filter(
     (appointment) =>
-      appointment.nome_medico.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.especialidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.tipo_consulta.toLowerCase().includes(searchTerm.toLowerCase()),
+      appointment.nome_medico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.especialidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.tipo_consulta?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR")
+  }
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return `${date.toLocaleDateString("pt-BR")} às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
   }
 
   if (!isAuthenticated) {
@@ -85,7 +120,6 @@ export default function AppointmentsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-      {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-blue-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -120,13 +154,11 @@ export default function AppointmentsPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Gerenciamento de Consultas</h2>
           <p className="text-gray-600">Agende e acompanhe suas consultas médicas</p>
         </div>
 
-        {/* Form Section */}
         {showForm && (
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Agendar Nova Consulta</h3>
@@ -250,7 +282,6 @@ export default function AppointmentsPage() {
           </div>
         )}
 
-        {/* Search Bar */}
         <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -264,8 +295,7 @@ export default function AppointmentsPage() {
           </div>
         </div>
 
-        {/* Appointments List */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8">
           <div className="p-6 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900">Consultas Agendadas</h3>
           </div>
@@ -314,12 +344,66 @@ export default function AppointmentsPage() {
                     </div>
 
                     {appointment.observacoes && (
-                      <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="bg-gray-50 rounded-lg p-3 mb-4">
                         <p className="text-sm text-gray-700">{appointment.observacoes}</p>
                       </div>
                     )}
+
+                    <button
+                      onClick={() => handleMarcarComoConcluida(appointment.id)}
+                      className="w-full flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Marcar como Concluída</span>
+                    </button>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900">Histórico de Consultas</h3>
+          </div>
+
+          <div className="p-6">
+            {appointmentHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">Nenhum registro no histórico</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Tipo</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Médico</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Especialidade</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Data da Consulta</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Local</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Concluída em</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {appointmentHistory
+                      .sort((a, b) => new Date(b.data_conclusao).getTime() - new Date(a.data_conclusao).getTime())
+                      .map((item) => (
+                        <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4 text-gray-900">{item.tipo_consulta}</td>
+                          <td className="py-3 px-4 text-gray-600">Dr. {item.nome_medico}</td>
+                          <td className="py-3 px-4 text-gray-600">{item.especialidade}</td>
+                          <td className="py-3 px-4 text-gray-600">
+                            {formatDate(item.data_consulta)} - {item.horario_consulta}
+                          </td>
+                          <td className="py-3 px-4 text-gray-600">{item.local_consulta}</td>
+                          <td className="py-3 px-4 text-gray-600">{formatDateTime(item.data_conclusao)}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
