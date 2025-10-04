@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 
-// In a real app, this would be stored in a database
-// For demo purposes, we'll use a simple in-memory store
+// In-memory store shared with send-reset-code
 const resetCodes = new Map<
   string,
   {
@@ -15,12 +14,16 @@ export async function POST(request: Request) {
   try {
     const { email, code } = await request.json()
 
+    console.log("[v0] Verifying code for email:", email, "code:", code)
+
     if (!email || !code) {
       return NextResponse.json({ success: false, error: "Email e código são obrigatórios" }, { status: 400 })
     }
 
-    // In a real app, fetch from database
+    // Get stored code
     const storedData = resetCodes.get(email)
+
+    console.log("[v0] Stored data:", storedData)
 
     if (!storedData) {
       return NextResponse.json({ success: false, error: "Código inválido ou expirado" }, { status: 400 })
@@ -43,17 +46,14 @@ export async function POST(request: Request) {
     storedData.used = true
     resetCodes.set(email, storedData)
 
+    console.log("[v0] Code verified successfully")
+
     return NextResponse.json({
       success: true,
       message: "Código verificado com sucesso",
     })
   } catch (error) {
-    console.error("Error verifying reset code:", error)
+    console.error("[v0] Error verifying reset code:", error)
     return NextResponse.json({ success: false, error: "Erro ao verificar código" }, { status: 500 })
   }
-}
-
-// Helper function to store reset code (called by send-reset-code route)
-export function storeResetCode(email: string, code: string, expiresAt: number) {
-  resetCodes.set(email, { code, expiresAt, used: false })
 }

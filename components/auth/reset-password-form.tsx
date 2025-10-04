@@ -28,6 +28,8 @@ export function ResetPasswordForm({ email, onBack, onSuccess }: ResetPasswordFor
     setError("")
 
     try {
+      console.log("[v0] Verifying token:", token, "for email:", email)
+
       const response = await fetch("/api/verify-reset-code", {
         method: "POST",
         headers: {
@@ -37,6 +39,7 @@ export function ResetPasswordForm({ email, onBack, onSuccess }: ResetPasswordFor
       })
 
       const data = await response.json()
+      console.log("[v0] Response from verify-reset-code:", data)
 
       if (data.success) {
         setStep("password")
@@ -44,6 +47,7 @@ export function ResetPasswordForm({ email, onBack, onSuccess }: ResetPasswordFor
         setError(data.error || "Código inválido")
       }
     } catch (err) {
+      console.error("[v0] Error in handleTokenSubmit:", err)
       setError("Erro ao verificar código")
     }
 

@@ -26,6 +26,8 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
     setError("")
 
     try {
+      console.log("[v0] Sending reset code to:", email)
+
       const response = await fetch("/api/send-reset-code", {
         method: "POST",
         headers: {
@@ -35,13 +37,17 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
       })
 
       const data = await response.json()
+      console.log("[v0] Response from send-reset-code:", data)
 
       if (data.success) {
-        // For demo purposes, show the code to the user
         if (data.demoCode) {
           setDemoCode(data.demoCode)
           alert(
-            `Código de recuperação enviado!\n\nPara fins de demonstração, seu código é: ${data.demoCode}\n\nEm produção, este código seria enviado apenas por email.`,
+            `✅ Código de recuperação gerado!\n\n` +
+              `📧 Email: ${email}\n` +
+              `🔑 Código: ${data.demoCode}\n\n` +
+              `⏰ Válido por 15 minutos\n\n` +
+              `ℹ️ O código também foi enviado para seu email (se configurado).`,
           )
         }
         setStep("reset")
@@ -49,6 +55,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
         setError(data.error || "Erro ao enviar email de recuperação")
       }
     } catch (err) {
+      console.error("[v0] Error in handleEmailSubmit:", err)
       setError("Erro ao enviar email de recuperação")
     }
 
