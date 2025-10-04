@@ -97,21 +97,34 @@ export const appointmentsService = {
     error?: string
     appointment?: Appointment
   }> => {
-    const newAppointment: Appointment = {
-      ...appointmentData,
-      id: Math.random().toString(36).substr(2, 9),
-      status: "scheduled",
-      createdAt: new Date(),
+    try {
+      const newAppointment: Appointment = {
+        ...appointmentData,
+        id: Math.random().toString(36).substr(2, 9),
+        status: "scheduled",
+        createdAt: new Date(),
+      }
+
+      let existingAppointments: any[] = []
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("appointments")
+        if (stored) {
+          existingAppointments = JSON.parse(stored)
+        }
+      }
+
+      existingAppointments.push(newAppointment)
+
+      // Store in localStorage for persistence
+      if (typeof window !== "undefined") {
+        localStorage.setItem("appointments", JSON.stringify(existingAppointments))
+      }
+
+      return { success: true, appointment: newAppointment }
+    } catch (error) {
+      console.error("[v0] Error creating appointment:", error)
+      return { success: false, error: "Erro ao criar consulta" }
     }
-
-    appointments.push(newAppointment)
-
-    // Store in localStorage for persistence
-    if (typeof window !== "undefined") {
-      localStorage.setItem("appointments", JSON.stringify(appointments))
-    }
-
-    return { success: true, appointment: newAppointment }
   },
 
   getByUserId: async (userId: string): Promise<Appointment[]> => {

@@ -25,6 +25,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
     sexo: "",
     endereco_completo: "",
     data_nascimento: "",
+    telefone: "", // Added telefone field
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -56,6 +57,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
       sexo: formData.sexo,
       endereco_completo: formData.endereco_completo,
       data_nascimento: formData.data_nascimento,
+      telefone: formData.telefone, // Included telefone in register call
     })
 
     if (!result.success) {
@@ -66,6 +68,16 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
   }
 
   const handleInputChange = (field: string, value: string) => {
+    // Limitar CPF a 14 caracteres (com formatação: 000.000.000-00)
+    if (field === "cpf" && value.length > 14) {
+      return
+    }
+
+    // Limitar telefone a 15 caracteres (com formatação: (00) 00000-0000)
+    if (field === "telefone" && value.length > 15) {
+      return
+    }
+
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -209,6 +221,22 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
                   required
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="telefone">Telefone</Label>
+            <div className="relative">
+              <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="telefone"
+                type="text"
+                placeholder="(00) 00000-0000"
+                value={formData.telefone}
+                onChange={(e) => handleInputChange("telefone", e.target.value)}
+                className="pl-10"
+                required
+              />
             </div>
           </div>
 

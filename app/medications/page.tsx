@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Heart, Plus, Pill, Tablets, Check, AlertTriangle } from "lucide-react"
+import { ArrowLeft, Heart, Plus, Pill, Tablets, Check, AlertTriangle, History } from "lucide-react"
 import { getMedications, createMedication } from "@/lib/medications"
 
 export default function MedicationsPage() {
@@ -66,9 +66,68 @@ export default function MedicationsPage() {
   }
 
   const handleConfirmarTomada = (medicamentoId: string) => {
-    // Logic for confirming medication intake
-    console.log("Confirmando tomada do medicamento:", medicamentoId)
+    const medicamento = medications.find((m) => m.id === medicamentoId)
+    if (!medicamento) return
+
+    // Criar registro no histórico
+    const historicoItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      medicamentoId: medicamento.id,
+      nome: medicamento.nome,
+      principio_ativo: medicamento.principio_ativo,
+      tipo: medicamento.tipo,
+      dose: medicamento.dose,
+      horario_uso: medicamento.horario_uso,
+      data_vencimento: medicamento.data_vencimento,
+      data_tomada: new Date().toISOString(),
+      status: "tomado",
+    }
+
+    // Salvar no histórico
+    const historico = JSON.parse(localStorage.getItem("medicationHistory") || "[]")
+    historico.push(historicoItem)
+    localStorage.setItem("medicationHistory", JSON.stringify(historico))
+
+    // Remover medicamento da lista ativa
+    const updatedMedications = medications.filter((m) => m.id !== medicamentoId)
+    localStorage.setItem("medications", JSON.stringify(updatedMedications))
+    setMedications(updatedMedications)
+
+    alert("Medicamento confirmado e movido para o histórico!")
   }
+
+  useEffect(() => {
+    if (medications.length === 0) return
+
+    const vencidos = medications.filter((med) => isVencido(med.data_vencimento))
+
+    if (vencidos.length > 0) {
+      const historico = JSON.parse(localStorage.getItem("medicationHistory") || "[]")
+
+      vencidos.forEach((med) => {
+        const historicoItem = {
+          id: Math.random().toString(36).substr(2, 9),
+          medicamentoId: med.id,
+          nome: med.nome,
+          principio_ativo: med.principio_ativo,
+          tipo: med.tipo,
+          dose: med.dose,
+          horario_uso: med.horario_uso,
+          data_vencimento: med.data_vencimento,
+          data_movido: new Date().toISOString(),
+          status: "vencido",
+        }
+        historico.push(historicoItem)
+      })
+
+      localStorage.setItem("medicationHistory", JSON.stringify(historico))
+
+      // Remover vencidos da lista ativa
+      const ativos = medications.filter((med) => !isVencido(med.data_vencimento))
+      localStorage.setItem("medications", JSON.stringify(ativos))
+      setMedications(ativos)
+    }
+  }, [medications])
 
   const diasParaVencimento = (dataVencimento: string) => {
     const hoje = new Date()
@@ -115,13 +174,22 @@ export default function MedicationsPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-green-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Novo Medicamento</span>
-            </button>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-green-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Novo Medicamento</span>
+              </button>
+              <button
+                onClick={() => router.push("/medications/history")}
+                className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all"
+              >
+                <History className="w-4 h-4" />
+                <span>Ver Histórico</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
