@@ -51,7 +51,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
 
   if (step === "success") {
     return (
-      <Card className="w-full max-w-md mx-auto">
+      <Card className="w-full max-w-md mx-auto border-gray-200 shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
             <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -62,7 +62,10 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={onBack} className="w-full">
+          <Button
+            onClick={onBack}
+            className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+          >
             Fazer Login
           </Button>
         </CardContent>
@@ -75,10 +78,12 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto border-gray-200 shadow-lg">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-semibold text-primary">Recuperar senha</CardTitle>
-        <CardDescription className="text-muted-foreground">
+        <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+          Recuperar senha
+        </CardTitle>
+        <CardDescription className="text-gray-600">
           Digite seu email para receber um código de recuperação
         </CardDescription>
       </CardHeader>
@@ -102,7 +107,11 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
 
           {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+            disabled={isLoading}
+          >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Enviar Código
           </Button>
@@ -112,7 +121,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
           <button
             type="button"
             onClick={onBack}
-            className="text-sm text-muted-foreground hover:text-primary flex items-center justify-center gap-2 mx-auto"
+            className="text-sm text-gray-600 hover:text-blue-600 flex items-center justify-center gap-2 mx-auto"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar ao login

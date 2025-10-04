@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { Heart, Calendar, Pill, User, LogOut } from "lucide-react"
 import { getAppointments } from "@/lib/appointments"
 import { getMedications } from "@/lib/medications"
+import { WaterIntakeTracker } from "@/components/water-intake-tracker"
 
 export default function DashboardPage() {
   const { isAuthenticated, user, logout } = useAuth()
@@ -48,7 +49,7 @@ export default function DashboardPage() {
     return appointments
       .filter((apt) => new Date(apt.data_consulta) >= today)
       .sort((a, b) => new Date(a.data_consulta).getTime() - new Date(b.data_consulta).getTime())
-      .slice(0, 3)
+      .slice(0, 2)
   }
 
   const formatDate = (dateString: string) => {
@@ -57,7 +58,7 @@ export default function DashboardPage() {
 
   const dashboardStats = {
     proximasConsultas: getProximasConsultas().length,
-    medicamentosAtivos: medications.length, // Contar todos os medicamentos carregados
+    medicamentosAtivos: medications.length,
   }
 
   return (
@@ -101,7 +102,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
@@ -123,6 +124,9 @@ export default function DashboardPage() {
             <h3 className="font-semibold text-gray-900 mb-1">Medicamentos</h3>
             <p className="text-sm text-gray-600">Em uso atualmente</p>
           </div>
+
+          {/* Water Intake Tracker */}
+          <WaterIntakeTracker />
         </div>
 
         {/* Quick Access to Today's Schedule */}

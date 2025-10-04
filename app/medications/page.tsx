@@ -13,6 +13,7 @@ export default function MedicationsPage() {
   const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   const [medications, setMedications] = useState<any[]>([])
+  const [medicationHistory, setMedicationHistory] = useState<any[]>([])
   const [formData, setFormData] = useState({
     nome: "",
     principio_ativo: "",
@@ -29,11 +30,17 @@ export default function MedicationsPage() {
       return
     }
     loadMedications()
+    loadMedicationHistory()
   }, [isAuthenticated, router])
 
   const loadMedications = () => {
     const loadedMedications = getMedications()
     setMedications(loadedMedications)
+  }
+
+  const loadMedicationHistory = () => {
+    const history = JSON.parse(localStorage.getItem("medicationHistory") || "[]")
+    setMedicationHistory(history)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -93,6 +100,8 @@ export default function MedicationsPage() {
     localStorage.setItem("medications", JSON.stringify(updatedMedications))
     setMedications(updatedMedications)
 
+    loadMedicationHistory()
+
     alert("Medicamento confirmado e movido para o histórico!")
   }
 
@@ -145,6 +154,11 @@ export default function MedicationsPage() {
     return new Date(dateString).toLocaleDateString("pt-BR")
   }
 
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return `${date.toLocaleDateString("pt-BR")} às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+  }
+
   if (!isAuthenticated) {
     return null
   }
@@ -181,13 +195,6 @@ export default function MedicationsPage() {
               >
                 <Plus className="w-4 h-4" />
                 <span>Novo Medicamento</span>
-              </button>
-              <button
-                onClick={() => router.push("/medications/history")}
-                className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all"
-              >
-                <History className="w-4 h-4" />
-                <span>Ver Histórico</span>
               </button>
             </div>
           </div>
@@ -319,7 +326,7 @@ export default function MedicationsPage() {
         )}
 
         {/* Medicamentos List */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8">
           <div className="p-6 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900">Medicamentos em Uso</h3>
           </div>
@@ -413,6 +420,64 @@ export default function MedicationsPage() {
                     </div>
                   )
                 })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900">Histórico de Medicamentos</h3>
+          </div>
+
+          <div className="p-6">
+            {medicationHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">Nenhum registro no histórico</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Medicamento</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Princípio Ativo</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Tipo</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Dose</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Data/Hora</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {medicationHistory
+                      .sort(
+                        (a, b) =>
+                          new Date(b.data_tomada || b.data_movido).getTime() -
+                          new Date(a.data_tomada || a.data_movido).getTime(),
+                      )
+                      .map((item) => (
+                        <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4 text-gray-900">{item.nome}</td>
+                          <td className="py-3 px-4 text-gray-600">{item.principio_ativo}</td>
+                          <td className="py-3 px-4 text-gray-600">{item.tipo}</td>
+                          <td className="py-3 px-4 text-gray-600">{item.dose}</td>
+                          <td className="py-3 px-4 text-gray-600">
+                            {formatDateTime(item.data_tomada || item.data_movido)}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                item.status === "tomado" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {item.status === "tomado" ? "Tomado" : "Vencido"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

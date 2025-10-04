@@ -38,12 +38,12 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto border-gray-200 shadow-lg">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-semibold text-primary">Entrar na sua conta</CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Digite suas credenciais para acessar o sistema
-        </CardDescription>
+        <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+          Entrar na sua conta
+        </CardTitle>
+        <CardDescription className="text-gray-600">Digite suas credenciais para acessar o sistema</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -81,20 +81,24 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
 
           {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+            disabled={isLoading}
+          >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Entrar
           </Button>
         </form>
 
         <div className="mt-6 space-y-4">
-          <button type="button" onClick={onForgotPassword} className="w-full text-sm text-primary hover:underline">
+          <button type="button" onClick={onForgotPassword} className="w-full text-sm text-blue-600 hover:underline">
             Esqueceu sua senha?
           </button>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-gray-600">
             Não tem uma conta?{" "}
-            <button type="button" onClick={onToggleMode} className="text-primary hover:underline font-medium">
+            <button type="button" onClick={onToggleMode} className="text-blue-600 hover:underline font-medium">
               Cadastre-se
             </button>
           </div>
