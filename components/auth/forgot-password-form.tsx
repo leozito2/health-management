@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { emailService } from "@/lib/email-service"
-import { passwordResetService } from "@/lib/password-reset"
 import { ResetPasswordForm } from "./reset-password-form"
 import { Loader2, Mail, ArrowLeft, CheckCircle } from "lucide-react"
 
@@ -20,6 +18,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [demoCode, setDemoCode] = useState("")
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,16 +26,27 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
     setError("")
 
     try {
-      // Generate reset token
-      const resetToken = passwordResetService.generateResetToken(email)
+      const response = await fetch("/api/send-reset-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
 
-      // Send email with reset token
-      const result = await emailService.sendPasswordResetEmail(email, resetToken)
+      const data = await response.json()
 
-      if (result.success) {
+      if (data.success) {
+        // For demo purposes, show the code to the user
+        if (data.demoCode) {
+          setDemoCode(data.demoCode)
+          alert(
+            `Código de recuperação enviado!\n\nPara fins de demonstração, seu código é: ${data.demoCode}\n\nEm produção, este código seria enviado apenas por email.`,
+          )
+        }
         setStep("reset")
       } else {
-        setError(result.error || "Erro ao enviar email de recuperação")
+        setError(data.error || "Erro ao enviar email de recuperação")
       }
     } catch (err) {
       setError("Erro ao enviar email de recuperação")
