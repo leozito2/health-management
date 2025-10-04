@@ -17,33 +17,17 @@ export interface Appointment {
 let appointments: Appointment[] = []
 
 export const getAppointments = (): any[] => {
-  console.log("[v0] getAppointments called")
-
   // Load appointments from localStorage if available
   if (typeof window !== "undefined") {
     const storedAppointments = localStorage.getItem("appointments")
-    console.log("[v0] Raw stored appointments:", storedAppointments)
 
     if (storedAppointments) {
       const parsed = JSON.parse(storedAppointments)
-      console.log("[v0] Parsed appointments:", parsed)
-
-      const mapped = parsed.map((apt: any) => ({
-        ...apt,
-        data_consulta: apt.date, // Map to expected field name
-        horario_consulta: apt.time, // Map to expected field name
-        tipo_consulta: apt.specialty, // Map to expected field name
-        nome_medico: apt.doctorName, // Map to expected field name
-        date: new Date(apt.date),
-        createdAt: new Date(apt.createdAt),
-      }))
-
-      console.log("[v0] Mapped appointments:", mapped)
-      return mapped
+      // Return appointments as stored, no need to remap fields
+      return parsed
     }
   }
 
-  console.log("[v0] No appointments found, returning empty array")
   return []
 }
 

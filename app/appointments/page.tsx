@@ -70,9 +70,9 @@ export default function AppointmentsPage() {
 
   const filteredAppointments = appointments.filter(
     (appointment) =>
-      appointment.nome_medico.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.especialidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.tipo_consulta.toLowerCase().includes(searchTerm.toLowerCase()),
+      appointment.nome_medico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.especialidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.tipo_consulta?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const formatDate = (dateString: string) => {

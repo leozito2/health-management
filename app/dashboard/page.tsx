@@ -22,9 +22,6 @@ export default function DashboardPage() {
     const loadedAppointments = getAppointments()
     const loadedMedications = getMedications()
 
-    console.log("[v0] Dashboard loaded medications:", loadedMedications)
-    console.log("[v0] Dashboard loaded appointments:", loadedAppointments)
-
     setAppointments(loadedAppointments)
     setMedications(loadedMedications)
   }, [isAuthenticated, router])
