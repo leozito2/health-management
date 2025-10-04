@@ -3,13 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
-import { Loader2, User, Mail, Lock, CreditCard, MapPin, Calendar } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 interface RegisterFormProps {
   onToggleMode: () => void
@@ -22,10 +17,16 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
     password: "",
     confirmPassword: "",
     cpf: "",
-    sexo: "",
-    endereco_completo: "",
+    sexo: "Masculino",
+    telefone: "",
+    endereco_rua: "",
+    endereco_numero: "",
+    endereco_complemento: "",
+    endereco_bairro: "",
+    endereco_cidade: "",
+    endereco_estado: "",
+    endereco_cep: "",
     data_nascimento: "",
-    telefone: "", // Added telefone field
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -55,9 +56,8 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
       password: formData.password,
       cpf: formData.cpf,
       sexo: formData.sexo,
-      endereco_completo: formData.endereco_completo,
+      endereco_completo: `${formData.endereco_rua}, ${formData.endereco_numero}, ${formData.endereco_complemento}, ${formData.endereco_bairro}, ${formData.endereco_cidade}, ${formData.endereco_estado}, ${formData.endereco_cep}`,
       data_nascimento: formData.data_nascimento,
-      telefone: formData.telefone, // Included telefone in register call
     })
 
     if (!result.success) {
@@ -67,200 +67,247 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
     setIsLoading(false)
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    // Limitar CPF a 14 caracteres (com formatação: 000.000.000-00)
-    if (field === "cpf" && value.length > 14) {
-      return
-    }
-
-    // Limitar telefone a 15 caracteres (com formatação: (00) 00000-0000)
-    if (field === "telefone" && value.length > 15) {
-      return
-    }
-
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-          Criar nova conta
-        </CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Preencha todos os dados para se cadastrar no MedCare
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome_completo">Nome completo</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="nome_completo"
-                  type="text"
-                  placeholder="Seu nome completo"
-                  value={formData.nome_completo}
-                  onChange={(e) => handleInputChange("nome_completo", e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+    <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100 w-full max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">Criar Conta - MedCare</h3>
+        <p className="text-gray-600">Preencha seus dados para começar</p>
+      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="cpf">CPF</Label>
-              <div className="relative">
-                <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="cpf"
-                  type="text"
-                  placeholder="000.000.000-00"
-                  value={formData.cpf}
-                  onChange={(e) => handleInputChange("cpf", e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sexo">Sexo</Label>
-              <Select value={formData.sexo} onValueChange={(value) => handleInputChange("sexo", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o sexo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="masculino">Masculino</SelectItem>
-                  <SelectItem value="feminino">Feminino</SelectItem>
-                  <SelectItem value="outro">Outro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Email & Senha */}
+        <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="endereco_completo">Endereço completo</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="endereco_completo"
+            <label className="text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="seu@email.com"
+              required
+              className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Senha</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="Mínimo 6 caracteres"
+              required
+              className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Informações pessoais */}
+        <div className="space-y-4">
+          <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Informações Pessoais</h4>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Nome completo</label>
+              <input
                 type="text"
-                placeholder="Rua, número, bairro, cidade, estado, CEP"
-                value={formData.endereco_completo}
-                onChange={(e) => handleInputChange("endereco_completo", e.target.value)}
-                className="pl-10"
+                name="nome_completo"
+                value={formData.nome_completo}
+                onChange={handleInputChange}
+                placeholder="Seu nome completo"
                 required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="data_nascimento">Data de nascimento</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="data_nascimento"
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Sexo</label>
+              <select
+                name="sexo"
+                value={formData.sexo}
+                onChange={handleInputChange}
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              >
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Data de nascimento</label>
+              <input
                 type="date"
+                name="data_nascimento"
                 value={formData.data_nascimento}
-                onChange={(e) => handleInputChange("data_nascimento", e.target.value)}
-                className="pl-10"
+                onChange={handleInputChange}
                 required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">CPF</label>
+              <input
+                type="text"
+                name="cpf"
+                value={formData.cpf}
+                onChange={handleInputChange}
+                placeholder="000.000.000-00"
+                required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
               />
             </div>
           </div>
+        </div>
 
+        {/* Contato */}
+        <div className="space-y-4">
+          <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Contato</h4>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Telefone</label>
+            <input
+              type="text"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleInputChange}
+              placeholder="(00) 00000-0000"
+              className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Endereço */}
+        <div className="space-y-4">
+          <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Endereço</h4>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar senha</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="telefone">Telefone</Label>
-            <div className="relative">
-              <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="telefone"
+              <label className="text-sm font-medium text-gray-700">Rua</label>
+              <input
                 type="text"
-                placeholder="(00) 00000-0000"
-                value={formData.telefone}
-                onChange={(e) => handleInputChange("telefone", e.target.value)}
-                className="pl-10"
+                name="endereco_rua"
+                value={formData.endereco_rua}
+                onChange={handleInputChange}
+                placeholder="Nome da rua"
                 required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Número</label>
+              <input
+                type="text"
+                name="endereco_numero"
+                value={formData.endereco_numero}
+                onChange={handleInputChange}
+                placeholder="123"
+                required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Complemento</label>
+              <input
+                type="text"
+                name="endereco_complemento"
+                value={formData.endereco_complemento}
+                onChange={handleInputChange}
+                placeholder="Apto, casa, etc."
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Bairro</label>
+              <input
+                type="text"
+                name="endereco_bairro"
+                value={formData.endereco_bairro}
+                onChange={handleInputChange}
+                placeholder="Nome do bairro"
+                required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Cidade</label>
+              <input
+                type="text"
+                name="endereco_cidade"
+                value={formData.endereco_cidade}
+                onChange={handleInputChange}
+                placeholder="Nome da cidade"
+                required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Estado</label>
+              <input
+                type="text"
+                name="endereco_estado"
+                value={formData.endereco_estado}
+                onChange={handleInputChange}
+                placeholder="SP"
+                maxLength={2}
+                required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">CEP</label>
+              <input
+                type="text"
+                name="endereco_cep"
+                value={formData.endereco_cep}
+                onChange={handleInputChange}
+                placeholder="00000-000"
+                required
+                className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
               />
             </div>
           </div>
+        </div>
 
-          {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
+        {/* Confirmar senha */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Confirmar senha</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleInputChange}
+            placeholder="Digite a senha novamente"
+            required
+            className="w-full border border-gray-200 px-4 py-3 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+          />
+        </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
-            disabled={isLoading}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Criar conta
-          </Button>
-        </form>
+        {error && <div className="text-sm text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">{error}</div>}
 
-        <div className="mt-6 text-center">
-          <div className="text-sm text-muted-foreground">
+        <button
+          type="submit"
+          className="w-full flex justify-center items-center space-x-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+          disabled={isLoading}
+        >
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Criar conta
+        </button>
+
+        <div className="text-center">
+          <div className="text-sm text-gray-600">
             Já tem uma conta?{" "}
-            <button type="button" onClick={onToggleMode} className="text-blue-600 hover:underline font-medium">
+            <button
+              type="button"
+              onClick={onToggleMode}
+              className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors"
+            >
               Faça login
             </button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </form>
+    </div>
   )
 }
